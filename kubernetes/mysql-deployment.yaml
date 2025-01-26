@@ -1,0 +1,95 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-script
+data:
+  script.sql:
+    CREATE TABLE IF NOT EXISTS courses (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    price DECIMAL(10, 2) NOT NULL);
+
+    CREATE TABLE IF NOT EXISTS users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL);
+
+    INSERT INTO courses (title, description, price) VALUES
+    ('React for Beginners', 'Learn the basics of React.js', 19.99),
+    ('Java for Beginners', 'Learn the basics of Java', 13.99),
+    ('JavaScript Mastery', 'Become a backend expert with JS', 29.99);
+
+    INSERT INTO users (name, email, password) VALUES
+    ('Jon Jones', 'jonbonesjones@gmail.com', 'heavyweightchamp'),
+    ('Amanda Nunes', 'amanda.nunes@gmail.com', 'doublechamp'),
+    ('Khabib Nurmagomedov', 'knurmagomedov@hotmail.com', 'lightweightchamp');
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - name: mysql
+        image: mysql:8.0
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: "SuperEtoiledeDakar_221"
+        - name: MYSQL_DATABASE
+          value: "studyhub"
+        - name: MYSQL_USER
+          value: "linaibrahima"
+        - name: MYSQL_PASSWORD
+          value: "miage2025"
+        ports:
+        - containerPort: 3306
+        volumeMounts:
+        - name: mysql-storage
+          mountPath: /var/lib/mysql
+        - name: script-volume
+          mountPath: /docker-entrypoint-initdb.d
+      volumes:
+      - name: mysql-storage
+        persistentVolumeClaim:
+          claimName: mysql-pvc
+      - name: script-volume
+        configMap:
+          name: mysql-script
+      - name: mysql-script
+        configMap:
+          name: mysql-script
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+spec:
+  ports:
+  - port: 3306
+    targetPort: 3306
+  selector:
+    app: mysql
