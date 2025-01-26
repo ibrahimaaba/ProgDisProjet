@@ -22,4 +22,11 @@ spec:
           service:
             name: backend-service
             port:
-              number: 5000  # Assurez-vous que c'est le bon port
+              number: 80
+      - path: /deuxieme
+        pathType: Prefix
+        backend:
+          service:
+            name: backend-deuxieme-service
+            port:
+              number: 80

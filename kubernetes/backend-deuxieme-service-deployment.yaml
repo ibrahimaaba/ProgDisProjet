@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deuxieme-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend-deuxieme-service
+  template:
+    metadata:
+      labels:
+        app: backend-deuxieme-service
+    spec:
+      containers:
+      - name: backend-deuxieme-service
+        image: linamorouche/backend-deuxieme-service:1.0
+        ports:
+        - containerPort: 4000
